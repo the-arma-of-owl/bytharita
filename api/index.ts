@@ -1,5 +1,15 @@
 import express from "express";
 
+let SETTINGS = {
+  rewardRadius: 15,
+  thresholds: [
+    { maxDistance: 100, color: "#3B5BDB", text: "Çok soğuksun..." },
+    { maxDistance: 50, color: "#F59F00", text: "Isınıyorsun!" },
+    { maxDistance: 20, color: "#E8590C", text: "SICAKLAŞIYORSUN!" },
+    { maxDistance: 10, color: "#C92A2A", text: "YANIYORSUN! 🔥" }
+  ]
+};
+
 // Target data (In a real app, this might come from a database)
 let TEAMS: Record<string, { name: string; lat: number; lng: number; reward: string }> = {
   "KIRMIZI-KARTAL-42": {
@@ -42,7 +52,7 @@ app.post("/api/verify-code", (req, res) => {
   const { code } = req.body;
   const team = TEAMS[code];
   if (team) {
-    res.json({ valid: true, teamName: team.name });
+    res.json({ valid: true, teamName: team.name, settings: SETTINGS });
   } else {
     res.status(404).json({ valid: false, error: "Geçersiz takım kodu!" });
   }
@@ -58,13 +68,24 @@ app.post("/api/get-distance", (req, res) => {
 
   const distance = haversineDistance(lat, lng, team.lat, team.lng);
   
-  // If distance is less than 10 meters, reveal the reward
-  const reward = distance < 15 ? team.reward : null;
+  // If distance is less than the reward radius, reveal the reward
+  const reward = distance < SETTINGS.rewardRadius ? team.reward : null;
 
   res.json({ distance, reward });
 });
 
 // Admin Endpoints
+app.get("/api/settings", (req, res) => {
+  res.json(SETTINGS);
+});
+
+app.put("/api/settings", (req, res) => {
+  const { rewardRadius, thresholds } = req.body;
+  if (rewardRadius !== undefined) SETTINGS.rewardRadius = rewardRadius;
+  if (thresholds !== undefined) SETTINGS.thresholds = thresholds;
+  res.json({ success: true, settings: SETTINGS });
+});
+
 app.get("/api/teams", (req, res) => {
   res.json(TEAMS);
 });

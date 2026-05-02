@@ -10,6 +10,7 @@ interface GameState {
   distance: number | null;
   reward: string | null;
   error: string | null;
+  settings: any | null;
 }
 
 export default function Game() {
@@ -20,6 +21,7 @@ export default function Game() {
     distance: null,
     reward: null,
     error: null,
+    settings: null,
   });
   
   const [watchId, setWatchId] = useState<number | null>(null);
@@ -103,7 +105,7 @@ export default function Game() {
       });
       const data = await res.json();
       if (data.valid) {
-        setGameState(s => ({ ...s, teamName: data.teamName }));
+        setGameState(s => ({ ...s, teamName: data.teamName, settings: data.settings }));
         setView("permissions");
       } else {
         setGameState(s => ({ ...s, error: data.error || "Hatalı kod!" }));
@@ -113,16 +115,66 @@ export default function Game() {
     }
   };
 
-  // Signal properties based on distance
-  const getSignalProps = (dist: number | null) => {
-    if (dist === null) return { color: "#111", text: "Konum aranıyor...", pulse: 0 };
-    if (dist > 100) return { color: "#3B5BDB", text: "Çok soğuksun...", pulse: 0, freq: 200, interval: 2000 };
-    if (dist > 50) return { color: "#F59F00", text: "Isınıyorsun!", pulse: 500, freq: 400, interval: 1000 };
-    if (dist > 20) return { color: "#E8590C", text: "SICAKLAŞIYORSUN!", pulse: 300, freq: 600, interval: 500 };
-    return { color: "#C92A2A", text: "YANIYORSUN! 🔥", pulse: 150, freq: 800, interval: 250 };
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : { r: 0, g: 0, b: 0 };
   };
 
-  const signal = getSignalProps(gameState.distance);
+  const lerpColor = (c1: string, c2: string, ratio: number) => {
+    const r1 = hexToRgb(c1);
+    const r2 = hexToRgb(c2);
+    const r = Math.round(r1.r + (r2.r - r1.r) * ratio);
+    const g = Math.round(r1.g + (r2.g - r1.g) * ratio);
+    const b = Math.round(r1.b + (r2.b - r1.b) * ratio);
+    return `rgb(${r}, ${g}, ${b})`;
+  };
+
+  // Signal properties based on distance
+  const getSignalProps = (dist: number | null, settings: any) => {
+    if (dist === null || !settings || !settings.thresholds) return { color: "#111", text: "Konum aranıyor...", pulse: 0 };
+    
+    const thresholds = [...settings.thresholds].sort((a, b) => a.maxDistance - b.maxDistance);
+    if (thresholds.length === 0) return { color: "#111", text: "Ayar yok", pulse: 0 };
+
+    // Find the current active text
+    const activeText = thresholds.find(t => dist <= t.maxDistance)?.text || thresholds[thresholds.length - 1].text;
+    
+    // Smooth Color Interpolation
+    let color = thresholds[thresholds.length - 1].color; // Default to furthest color
+    
+    if (dist <= thresholds[0].maxDistance) {
+      color = thresholds[0].color;
+    } else if (dist >= thresholds[thresholds.length - 1].maxDistance) {
+      color = thresholds[thresholds.length - 1].color;
+    } else {
+      // Find the two thresholds we are between
+      for (let i = 0; i < thresholds.length - 1; i++) {
+        const t1 = thresholds[i];
+        const t2 = thresholds[i+1];
+        if (dist >= t1.maxDistance && dist < t2.maxDistance) {
+          // dist is between t1 (closer) and t2 (further)
+          const ratio = (dist - t1.maxDistance) / (t2.maxDistance - t1.maxDistance);
+          // lerp from t1.color to t2.color. 
+          color = lerpColor(t1.color, t2.color, ratio);
+          break;
+        }
+      }
+    }
+
+    // Default vibration intervals based on distance for now, or could make these dynamic too
+    let pulse = 0, freq = 200, interval = 2000;
+    if (dist < 20) { pulse = 150; freq = 800; interval = 250; }
+    else if (dist < 50) { pulse = 300; freq = 600; interval = 500; }
+    else if (dist < 100) { pulse = 500; freq = 400; interval = 1000; }
+
+    return { color, text: activeText, pulse, freq, interval };
+  };
+
+  const signal = getSignalProps(gameState.distance, gameState.settings);
 
   // Vibration / Beep effects
   useEffect(() => {

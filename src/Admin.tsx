@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Edit2, MapPin, X } from "lucide-react";
+import { Plus, Trash2, Edit2, MapPin, X, Settings as SettingsIcon } from "lucide-react";
 import CesiumMap from "./CesiumMap";
+import SettingsModal, { Settings } from "./SettingsModal";
 
 interface Team {
   name: string;
@@ -11,9 +12,11 @@ interface Team {
 
 export default function Admin() {
   const [teams, setTeams] = useState<Record<string, Team>>({});
+  const [settings, setSettings] = useState<Settings>({ rewardRadius: 15, thresholds: [] });
   const [loading, setLoading] = useState(true);
   
-  // Form State
+  // Form & Settings State
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCode, setEditingCode] = useState<string | null>(null);
   
@@ -25,11 +28,14 @@ export default function Admin() {
     reward: ""
   });
 
-  const fetchTeams = async () => {
+  const fetchData = async () => {
     try {
-      const res = await fetch("/api/teams");
-      const data = await res.json();
-      setTeams(data);
+      const [teamsRes, settingsRes] = await Promise.all([
+        fetch("/api/teams"),
+        fetch("/api/settings")
+      ]);
+      setTeams(await teamsRes.json());
+      setSettings(await settingsRes.json());
     } catch (e) {
       console.error(e);
     } finally {
@@ -38,7 +44,7 @@ export default function Admin() {
   };
 
   useEffect(() => {
-    fetchTeams();
+    fetchData();
   }, []);
 
   const openAddModal = () => {
@@ -66,7 +72,7 @@ export default function Admin() {
         body: JSON.stringify(formData)
       });
       
-      await fetchTeams();
+      await fetchData();
       setIsModalOpen(false);
     } catch (e) {
       console.error(e);
@@ -77,7 +83,7 @@ export default function Admin() {
     if (!confirm(`${code} takımını silmek istediğinize emin misiniz?`)) return;
     try {
       await fetch(`/api/teams/${code}`, { method: "DELETE" });
-      await fetchTeams();
+      await fetchData();
     } catch (e) {
       console.error(e);
     }
@@ -94,12 +100,20 @@ export default function Admin() {
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Admin Panel</h1>
-          <button 
-            onClick={openAddModal}
-            className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
-          >
-            <Plus className="w-5 h-5" /> Yeni Takım
-          </button>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setIsSettingsOpen(true)}
+              className="bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+            >
+              <SettingsIcon className="w-5 h-5" /> Genel Ayarlar
+            </button>
+            <button 
+              onClick={openAddModal}
+              className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+            >
+              <Plus className="w-5 h-5" /> Yeni Takım
+            </button>
+          </div>
         </div>
 
         <div className="grid gap-4">
@@ -213,6 +227,7 @@ export default function Admin() {
                     onLocationSelect={handleLocationSelect} 
                     defaultLat={formData.lat} 
                     defaultLng={formData.lng} 
+                    settings={settings}
                   />
                 )}
               </div>
@@ -234,6 +249,17 @@ export default function Admin() {
             </div>
           </div>
         </div>
+      )}
+
+      {isSettingsOpen && (
+        <SettingsModal 
+          initialSettings={settings} 
+          onClose={() => setIsSettingsOpen(false)} 
+          onSave={(newSettings) => {
+            setSettings(newSettings);
+            setIsSettingsOpen(false);
+          }} 
+        />
       )}
     </div>
   );
