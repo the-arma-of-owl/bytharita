@@ -29,6 +29,12 @@ let TEAMS: Record<string, { name: string; lat: number; lng: number; reward: stri
     lat: 41.0052,
     lng: 28.9824,
     reward: "Barın sağ tarafındaki yeşil saksının içinde!"
+  },
+  "TEST-01": {
+    name: "Test Takımı",
+    lat: 38.67343079262147,
+    lng: 39.16065547479917,
+    reward: "Test başarılı! Ödülü aldın."
   }
 };
 

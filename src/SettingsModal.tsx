@@ -28,7 +28,7 @@ export default function SettingsModal({ initialSettings, onClose, onSave }: Sett
   const addThreshold = () => {
     setSettings(s => ({
       ...s,
-      thresholds: [...s.thresholds, { maxDistance: 30, color: "#FFFFFF", text: "Yeni Eşik" }].sort((a, b) => b.maxDistance - a.maxDistance)
+      thresholds: [...s.thresholds, { maxDistance: 5, color: "#FFFFFF", text: "Yeni Eşik" }]
     }));
   };
 

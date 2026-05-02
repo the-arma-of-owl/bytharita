@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, type FormEvent } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { MapPin, Trophy, ShieldAlert, Wifi, Zap, Smartphone, ChevronRight } from "lucide-react";
+import { MapPin, Trophy, ShieldAlert, Wifi, Zap, Smartphone, ChevronRight, Navigation } from "lucide-react";
 
 type View = "join" | "permissions" | "game" | "reward";
 
@@ -29,6 +29,7 @@ export default function Game() {
   });
   
   const [watchId, setWatchId] = useState<number | null>(null);
+  const [heading, setHeading] = useState<number | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
 
   // Initialize Audio for iOS fallback
@@ -200,6 +201,46 @@ export default function Game() {
     return () => clearInterval(interval);
   }, [view, signal.pulse, signal.freq, signal.interval]);
 
+  // Compass listener
+  useEffect(() => {
+    if (view !== "game") return;
+    
+    const handleOrientation = (event: any) => {
+      let webkitHeading = event.webkitCompassHeading;
+      if (webkitHeading !== undefined && webkitHeading !== null) {
+        setHeading(webkitHeading);
+      } else if (event.alpha !== null) {
+        setHeading(360 - event.alpha);
+      }
+    };
+    
+    window.addEventListener('deviceorientationabsolute', handleOrientation);
+    window.addEventListener('deviceorientation', handleOrientation);
+    
+    return () => {
+      window.removeEventListener('deviceorientationabsolute', handleOrientation);
+      window.removeEventListener('deviceorientation', handleOrientation);
+    }
+  }, [view]);
+
+  const getBearing = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+    const toRad = (deg: number) => deg * Math.PI / 180;
+    const toDeg = (rad: number) => rad * 180 / Math.PI;
+    
+    const dLng = toRad(lng2 - lng1);
+    const y = Math.sin(dLng) * Math.cos(toRad(lat2));
+    const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) -
+              Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLng);
+    const brng = toDeg(Math.atan2(y, x));
+    return (brng + 360) % 360;
+  };
+
+  const bearing = (gameState.userLat && gameState.userLng && gameState.targetLat && gameState.targetLng) 
+    ? getBearing(gameState.userLat, gameState.userLng, gameState.targetLat, gameState.targetLng)
+    : 0;
+
+  const arrowRotation = heading !== null ? (bearing - heading) : bearing;
+
   return (
     <div className="min-h-screen bg-black text-white font-sans overflow-hidden">
       <AnimatePresence mode="wait">
@@ -258,6 +299,9 @@ export default function Game() {
                 onClick={() => {
                   initAudio();
                   startTracking();
+                  if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+                    (DeviceOrientationEvent as any).requestPermission().catch(console.error);
+                  }
                   setView("game");
                 }}
                 className="w-full bg-white text-black p-4 rounded-xl font-bold flex items-center justify-center gap-3"
@@ -291,10 +335,22 @@ export default function Game() {
                 <span>{gameState.targetLat?.toFixed(5)}, {gameState.targetLng?.toFixed(5)}</span>
                 <span className="text-zinc-500 mt-1">Mesafe:</span>
                 <span className="font-bold text-white mt-1">{gameState.distance?.toFixed(1)}m</span>
+                <span className="text-zinc-500 mt-1">Pusula:</span>
+                <span className="font-bold text-white mt-1">{heading !== null ? heading.toFixed(0) + "°" : "Yok"}</span>
               </div>
             </div>
 
-            <div className="flex flex-col items-center gap-8">
+            {/* Test Modu Pusula Oku (Ortada dev ok) */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20 pointer-events-none z-0">
+              <motion.div 
+                animate={{ rotate: arrowRotation }} 
+                transition={{ type: "spring", damping: 15 }}
+              >
+                <Navigation className="w-64 h-64 text-white drop-shadow-2xl fill-white" strokeWidth={1} />
+              </motion.div>
+            </div>
+
+            <div className="flex flex-col items-center gap-8 relative z-10">
               <motion.div
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: signal.interval ? signal.interval / 1000 : 2, repeat: Infinity }}
