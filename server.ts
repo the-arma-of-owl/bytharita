@@ -80,7 +80,7 @@ async function startServer() {
     // If distance is less than the reward radius, reveal the reward
     const reward = distance < SETTINGS.rewardRadius ? team.reward : null;
 
-    res.json({ distance, reward });
+    res.json({ distance, reward, targetLat: team.lat, targetLng: team.lng });
   });
 
   // Admin Endpoints

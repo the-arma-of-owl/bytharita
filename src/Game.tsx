@@ -11,6 +11,10 @@ interface GameState {
   reward: string | null;
   error: string | null;
   settings: any | null;
+  userLat?: number;
+  userLng?: number;
+  targetLat?: number;
+  targetLng?: number;
 }
 
 export default function Game() {
@@ -74,7 +78,11 @@ export default function Game() {
             setGameState(s => ({ 
               ...s, 
               distance: data.distance,
-              reward: data.reward || s.reward
+              reward: data.reward || s.reward,
+              userLat: latitude,
+              userLng: longitude,
+              targetLat: data.targetLat,
+              targetLng: data.targetLng
             }));
 
             if (data.reward) {
@@ -271,6 +279,19 @@ export default function Game() {
               <span className="bg-black/20 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
                 {gameState.teamName}
               </span>
+            </div>
+
+            {/* Test Modu Overlay */}
+            <div className="fixed top-4 left-4 z-50 bg-black/80 backdrop-blur-sm text-xs font-mono p-3 rounded-xl text-zinc-300 border border-zinc-700/50 pointer-events-none shadow-xl">
+              <div className="text-yellow-400 font-bold mb-2">🛠 TEST MODU</div>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                <span className="text-zinc-500">Mevcut:</span>
+                <span>{gameState.userLat?.toFixed(5)}, {gameState.userLng?.toFixed(5)}</span>
+                <span className="text-zinc-500">Hedef:</span>
+                <span>{gameState.targetLat?.toFixed(5)}, {gameState.targetLng?.toFixed(5)}</span>
+                <span className="text-zinc-500 mt-1">Mesafe:</span>
+                <span className="font-bold text-white mt-1">{gameState.distance?.toFixed(1)}m</span>
+              </div>
             </div>
 
             <div className="flex flex-col items-center gap-8">
