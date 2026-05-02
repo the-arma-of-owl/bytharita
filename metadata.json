@@ -1,0 +1,6 @@
+{
+  "name": "Sıcak Soğuk — Klüp Etkinlik Oyunu",
+  "description": "Takım bazlı, GPS destekli, telefon tam ekran renk sinyaliyle oynanan sıcak-soğuk ödül arama oyunu.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": []
+}
