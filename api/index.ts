@@ -1,7 +1,7 @@
 import express from "express";
 
 let SETTINGS = {
-  rewardRadius: 15,
+  rewardRadius: 1,
   thresholds: [
     { maxDistance: 100, color: "#3B5BDB", text: "Çok soğuksun..." },
     { maxDistance: 50, color: "#F59F00", text: "Isınıyorsun!" },
@@ -35,6 +35,12 @@ let TEAMS: Record<string, { name: string; lat: number; lng: number; reward: stri
     lat: 38.67343079262147,
     lng: 39.16065547479917,
     reward: "Test başarılı! Ödülü aldın."
+  },
+  "TEST-02": {
+    name: "Test Takımı 2",
+    lat: 38.671155550112275,
+    lng: 39.186431070779186,
+    reward: "İkinci test başarılı! Harika."
   }
 };
 
