@@ -15,6 +15,7 @@ interface GameState {
   userLng?: number;
   targetLat?: number;
   targetLng?: number;
+  gpsAccuracy?: number;
 }
 
 export default function Game() {
@@ -63,7 +64,7 @@ export default function Game() {
 
     const id = navigator.geolocation.watchPosition(
       async (position) => {
-        const { latitude, longitude } = position.coords;
+        const { latitude, longitude, accuracy } = position.coords;
         try {
           const res = await fetch("/api/get-distance", {
             method: "POST",
@@ -83,7 +84,8 @@ export default function Game() {
               userLat: latitude,
               userLng: longitude,
               targetLat: data.targetLat,
-              targetLng: data.targetLng
+              targetLng: data.targetLng,
+              gpsAccuracy: accuracy,
             }));
 
             if (data.reward) {
@@ -98,7 +100,11 @@ export default function Game() {
       (err) => {
         setGameState(s => ({ ...s, error: "Konum izni reddedildi!" }));
       },
-      { enableHighAccuracy: true }
+      { 
+        enableHighAccuracy: true,  // GPS chip kullan, WiFi/cell değil
+        maximumAge: 0,             // Önbellek kullanma, her zaman taze konum al
+        timeout: 5000              // 5 saniye içinde yanıt al
+      }
     );
     setWatchId(id);
   };
@@ -174,11 +180,14 @@ export default function Game() {
       }
     }
 
-    // Default vibration intervals based on distance for now, or could make these dynamic too
+    // Vibration & beep intensities tuned for close-range (sub-20m) gameplay
     let pulse = 0, freq = 200, interval = 2000;
-    if (dist < 20) { pulse = 150; freq = 800; interval = 250; }
-    else if (dist < 50) { pulse = 300; freq = 600; interval = 500; }
-    else if (dist < 100) { pulse = 500; freq = 400; interval = 1000; }
+    if (dist < 0.5) { pulse = 100; freq = 1200; interval = 100; }       // LAVA - sürekli titreşim
+    else if (dist < 1.5) { pulse = 120; freq = 1000; interval = 150; }  // Yanıyorsun
+    else if (dist < 3) { pulse = 150; freq = 800; interval = 250; }     // Sıcaklaşıyorsun
+    else if (dist < 5) { pulse = 200; freq = 600; interval = 400; }     // Isınıyorsun
+    else if (dist < 10) { pulse = 300; freq = 400; interval = 700; }    // Soğuk
+    else if (dist < 20) { pulse = 400; freq = 300; interval = 1200; }   // Çok soğuk
 
     return { color, text: activeText, pulse, freq, interval };
   };
@@ -330,11 +339,13 @@ export default function Game() {
               <div className="text-yellow-400 font-bold mb-2">🛠 TEST MODU</div>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                 <span className="text-zinc-500">Mevcut:</span>
-                <span>{gameState.userLat?.toFixed(5)}, {gameState.userLng?.toFixed(5)}</span>
+                <span>{gameState.userLat?.toFixed(6)}, {gameState.userLng?.toFixed(6)}</span>
                 <span className="text-zinc-500">Hedef:</span>
-                <span>{gameState.targetLat?.toFixed(5)}, {gameState.targetLng?.toFixed(5)}</span>
+                <span>{gameState.targetLat?.toFixed(6)}, {gameState.targetLng?.toFixed(6)}</span>
                 <span className="text-zinc-500 mt-1">Mesafe:</span>
-                <span className="font-bold text-white mt-1">{gameState.distance?.toFixed(1)}m</span>
+                <span className="font-bold text-white mt-1">{gameState.distance !== null ? (gameState.distance < 1 ? (gameState.distance * 100).toFixed(0) + 'cm' : gameState.distance.toFixed(2) + 'm') : '?'}</span>
+                <span className="text-zinc-500 mt-1">GPS Hata:</span>
+                <span className={`font-bold mt-1 ${(gameState.gpsAccuracy || 999) < 3 ? 'text-green-400' : (gameState.gpsAccuracy || 999) < 10 ? 'text-yellow-400' : 'text-red-400'}`}>±{gameState.gpsAccuracy?.toFixed(1)}m</span>
                 <span className="text-zinc-500 mt-1">Pusula:</span>
                 <span className="font-bold text-white mt-1">{heading !== null ? heading.toFixed(0) + "°" : "Yok"}</span>
               </div>
@@ -370,7 +381,7 @@ export default function Game() {
               <div className="h-1 bg-white/20 rounded-full overflow-hidden">
                 <motion.div 
                   className="h-full bg-white"
-                  animate={{ width: `${Math.max(0, 100 - (gameState.distance || 100))}%` }}
+                  animate={{ width: `${Math.max(0, Math.min(100, 100 - ((gameState.distance || 20) / 20) * 100))}%` }}
                 />
               </div>
             </div>

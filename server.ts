@@ -7,46 +7,48 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 let SETTINGS = {
-  rewardRadius: 1,
+  rewardRadius: 0.5, // 50cm'ye yaklaşınca ödül açılır
   thresholds: [
-    { maxDistance: 100, color: "#3B5BDB", text: "Çok soğuksun..." },
-    { maxDistance: 50, color: "#F59F00", text: "Isınıyorsun!" },
-    { maxDistance: 20, color: "#E8590C", text: "SICAKLAŞIYORSUN!" },
-    { maxDistance: 10, color: "#C92A2A", text: "YANIYORSUN! 🔥" }
+    { maxDistance: 20, color: "#3B5BDB", text: "Çok soğuksun... 🥶" },
+    { maxDistance: 10, color: "#1C7ED6", text: "Soğuk... ❄️" },
+    { maxDistance: 5, color: "#F59F00", text: "Isınıyorsun! 🌡️" },
+    { maxDistance: 3, color: "#E8590C", text: "SICAKLAŞIYORSUN! 🔥" },
+    { maxDistance: 1.5, color: "#C92A2A", text: "YANIYORSUN! 🔥🔥🔥" },
+    { maxDistance: 0.5, color: "#FF0000", text: "LAVA! HEMEN YANINDA! 🌋" }
   ]
 };
 
-// Target data (In a real app, this might come from a database)
+// Elazığ Elisyum AVM içi konumlar
 let TEAMS: Record<string, { name: string; lat: number; lng: number; reward: string }> = {
-  "KIRMIZI-KARTAL-42": {
-    name: "Red Eagles",
-    lat: 41.0082, // Sample Istanbul coordinates
-    lng: 28.9784,
-    reward: "Sahne arkasındaki kırmızı koltukların hemen yanında!"
+  "TAKIM-1": {
+    name: "Ateş Takımı",
+    lat: 38.67062,
+    lng: 39.18672,
+    reward: "🏆 Elisyum AVM Giriş Katı - Bilgi bankosunun yanındaki kırmızı kutu!"
   },
-  "MAVI-ASLAN-07": {
-    name: "Blue Lions",
-    lat: 41.0122,
-    lng: 28.9744,
-    reward: "Girişteki vestiyerin arkasındaki mavi kutuda!"
+  "TAKIM-2": {
+    name: "Buz Takımı",
+    lat: 38.67065,
+    lng: 39.18675,
+    reward: "🏆 Elisyum AVM Food Court - Orta masadaki mavi zarfın içinde!"
   },
-  "YESIL-KURT-13": {
-    name: "Green Wolves",
-    lat: 41.0052,
-    lng: 28.9824,
-    reward: "Barın sağ tarafındaki yeşil saksının içinde!"
+  "TAKIM-3": {
+    name: "Fırtına Takımı",
+    lat: 38.67060,
+    lng: 39.18670,
+    reward: "🏆 Elisyum AVM Sinema Önü - Poster panosunun arkasında!"
   },
-  "TEST-01": {
-    name: "Test Takımı",
-    lat: 38.67343079262147,
-    lng: 39.16065547479917,
-    reward: "Test başarılı! Ödülü aldın."
+  "TAKIM-4": {
+    name: "Yıldırım Takımı",
+    lat: 38.67068,
+    lng: 39.18668,
+    reward: "🏆 Elisyum AVM Oyun Alanı - Pençe makinasının yanındaki yeşil kutu!"
   },
-  "TEST-02": {
-    name: "Test Takımı 2",
-    lat: 38.671155550112275,
-    lng: 39.186431070779186,
-    reward: "İkinci test başarılı! Harika."
+  "TAKIM-5": {
+    name: "Gölge Takımı",
+    lat: 38.67055,
+    lng: 39.18680,
+    reward: "🏆 Elisyum AVM Yürüyen Merdiven - Saksının arkasındaki sarı zarf!"
   }
 };
 

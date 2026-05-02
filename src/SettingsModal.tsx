@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { X, Plus, Trash2 } from "lucide-react";
-import CesiumMap from "./CesiumMap";
+import LeafletMap from "./LeafletMap";
 
 export interface Threshold {
   maxDistance: number;
@@ -21,9 +21,9 @@ interface SettingsModalProps {
 
 export default function SettingsModal({ initialSettings, onClose, onSave }: SettingsModalProps) {
   const [settings, setSettings] = useState<Settings>(initialSettings);
-  // We need a dummy location to render the map, we'll just use Istanbul default
-  const defaultLat = 41.0082;
-  const defaultLng = 28.9784;
+  // Elisyum AVM default
+  const defaultLat = 38.67062;
+  const defaultLng = 39.18672;
 
   const addThreshold = () => {
     setSettings(s => ({
@@ -150,7 +150,7 @@ export default function SettingsModal({ initialSettings, onClose, onSave }: Sett
           </div>
           
           <div className="flex-[2] min-h-[400px] h-full border border-zinc-800 rounded-xl relative">
-            <CesiumMap 
+            <LeafletMap 
               defaultLat={defaultLat} 
               defaultLng={defaultLng} 
               settings={settings}

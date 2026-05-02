@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Plus, Trash2, Edit2, MapPin, X, Settings as SettingsIcon } from "lucide-react";
-import CesiumMap from "./CesiumMap";
+import LeafletMap from "./LeafletMap";
 import SettingsModal, { Settings } from "./SettingsModal";
 
 interface Team {
@@ -23,8 +23,8 @@ export default function Admin() {
   const [formData, setFormData] = useState({
     code: "",
     name: "",
-    lat: 41.0082,
-    lng: 28.9784,
+    lat: 38.67062,
+    lng: 39.18672,
     reward: ""
   });
 
@@ -49,7 +49,7 @@ export default function Admin() {
 
   const openAddModal = () => {
     setEditingCode(null);
-    setFormData({ code: "", name: "", lat: 41.0082, lng: 28.9784, reward: "" });
+    setFormData({ code: "", name: "", lat: 38.67062, lng: 39.18672, reward: "" });
     setIsModalOpen(true);
   };
 
@@ -219,11 +219,8 @@ export default function Admin() {
               </div>
               
               <div className="flex-[2] min-h-[400px] h-full border border-zinc-800 rounded-xl relative">
-                <div className="absolute top-2 left-2 z-10 bg-black/80 px-3 py-2 rounded-lg text-sm pointer-events-none border border-zinc-700">
-                  Haritadan konum seçmek için tıklayın
-                </div>
                 {isModalOpen && (
-                  <CesiumMap 
+                  <LeafletMap 
                     onLocationSelect={handleLocationSelect} 
                     defaultLat={formData.lat} 
                     defaultLng={formData.lng} 
