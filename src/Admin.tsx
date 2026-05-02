@@ -141,7 +141,7 @@ export default function Admin() {
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto flex flex-col">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-[95vw] max-w-7xl h-[95vh] flex flex-col">
             <div className="p-4 border-b border-zinc-800 flex justify-between items-center sticky top-0 bg-zinc-900/90 backdrop-blur z-10">
               <h2 className="text-xl font-bold">{editingCode ? "Takımı Düzenle" : "Yeni Takım Ekle"}</h2>
               <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-zinc-800 rounded-full">
@@ -149,8 +149,8 @@ export default function Admin() {
               </button>
             </div>
             
-            <div className="p-4 flex flex-col md:flex-row gap-6">
-              <div className="flex-1 space-y-4">
+            <div className="p-4 flex flex-col md:flex-row gap-6 flex-1 min-h-0">
+              <div className="flex-1 space-y-4 overflow-y-auto pr-2">
                 <div>
                   <label className="block text-sm font-medium text-zinc-400 mb-1">Takım Kodu</label>
                   <input 
@@ -204,8 +204,8 @@ export default function Admin() {
                 </div>
               </div>
               
-              <div className="flex-1 min-h-[300px] border border-zinc-800 rounded-xl relative">
-                <div className="absolute top-2 left-2 z-10 bg-black/60 px-2 py-1 rounded text-xs pointer-events-none">
+              <div className="flex-[2] min-h-[400px] h-full border border-zinc-800 rounded-xl relative">
+                <div className="absolute top-2 left-2 z-10 bg-black/80 px-3 py-2 rounded-lg text-sm pointer-events-none border border-zinc-700">
                   Haritadan konum seçmek için tıklayın
                 </div>
                 {isModalOpen && (
