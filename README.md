@@ -1,20 +1,20 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Sıcak Soğuk 🔥❄️
 
-# Run and deploy your AI Studio app
+Kulüp etkinlikleri için takım bazlı, GPS destekli hazine avı oyunu. Telefon ekranı tam ekran bir renk sinyaline dönüşür: hedefe yaklaştıkça ısınır, uzaklaştıkça soğur.
 
-This contains everything you need to run your app locally.
+🔗 **Canlı:** [bytharita.vercel.app](https://bytharita.vercel.app)
 
-View your app in AI Studio: https://ai.studio/apps/d89556f7-6716-415a-8f3d-3d2fb78f9752
+## Özellikler
 
-## Run Locally
+- Konum izniyle gerçek zamanlı sıcak/soğuk sinyali
+- Takım bazlı oyun
+- `/admin` sayfasından harita (Leaflet) üzerinde hedef yönetimi
 
-**Prerequisites:**  Node.js
+## Yerelde çalıştırma
 
+```bash
+npm install
+npm run dev
+```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+React, Vite, Leaflet ve TypeScript ile yazıldı.
